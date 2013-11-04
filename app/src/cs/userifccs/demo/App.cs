@@ -9,15 +9,19 @@ using System.Linq;
 using SysTextRegex = System.Text.RegularExpressions;
 using NewtJson = Newtonsoft.Json;
 
+using GtkX = global::Gtk;
+
 using Util = Introcs.Util.Library;
 using Demo = Userifccs.Demo.Library;
+using UiGtk = Userifccs.Gtk;
 
 struct OptsRecord {
     public string Name { get; set; }
-    
+    public string Ifc { get; set; }
+
     public override string ToString()
     {
-		return String.Format("OptsRecord: [Name: {0}]", Name);
+		return String.Format("OptsRecord: [Name: {0}; Ifc: {1}]", Name, Ifc);
     }
 }
 
@@ -55,6 +59,32 @@ public static class App {
         greetStr = Demo.Greeting(rsrcPath + "/" + greetPath, name);
         Console.WriteLine("{0} {1}\n{2}!", dateStr, tzStr, greetStr);
     }
+
+    static void RunDemoGtk(string name, string rsrcPath = "resources")
+    {
+        DateTime time1 = DateTime.Now;
+        string greetStr, dateStr, greetPath = "greet.txt";
+        TimeZone tz1 = TimeZone.CurrentTimeZone;
+        string tzStr = tz1.IsDaylightSavingTime(time1) ? tz1.DaylightName
+        	: tz1.StandardName;
+
+        SysTextRegex.Regex re = new SysTextRegex.Regex(@"(?i)^quit$");
+        SysTextRegex.Match m = re.Match(name);
+
+		dateStr = time1.ToString("ddd MMM dd HH:mm:ss yyyy zzz");
+
+        string pretext = string.Format("{0} match: {1} to {2}\n(C# {3}.{4}) Gtk# {5}.{6}\n{7} {8}\n",
+        	m.Success ? "Good" : "Does not", name, re,
+        	Environment.Version.Major, Environment.Version.Minor,
+        	GtkX.Global.MajorVersion, GtkX.Global.MinorVersion, dateStr, tzStr);
+
+        GtkX.Application.Init();
+		var uicontroller = new UiGtk.HelloController("greet.txt", assembly,
+			rsrcPath);
+				((GtkX.TextView)uicontroller.View.widgets["textview1"]).Buffer.Text =
+			pretext;
+        GtkX.Application.Run();
+    }
     
     static void ParseCmdopts(string[] args, Mono.Options.OptionSet options)
     {
@@ -91,11 +121,12 @@ public static class App {
     /// <returns>The exit code.</returns>
     static int Main(string[] args)
     {
-        OptsRecord opts = new OptsRecord() {Name = "World"};
+        OptsRecord opts = new OptsRecord() {Name = "World", Ifc = "Term"};
         var options = new Mono.Options.OptionSet() {
             {"u|user=", "user name", (string v) => opts.Name = v},
+            {"i|ifc=", "interface", (string v) => opts.Ifc = v},
             { "h|help",  "show this message", v => showHelp = true },
-            //v != null },
+            //{v != null },
         };
 
         IO.Stream traceOut = IO.File.Create("trace.log");
@@ -172,7 +203,21 @@ public static class App {
 			Console.WriteLine("user1Name: {0}\n", tup.Item3);
 		}
         
-        RunDemo(opts.Name, rsrcPath);
+        /*var switcher = new SysCollGen.Dictionary<string, Action<string, string>> {
+        	//{"term", RunDemo },
+        	{"gtk", RunDemoGtk }
+        };
+        var func = switcher.ContainsKey(opts.Ifc.ToLower()) ?
+        	switcher[opts.Ifc.ToLower()] : RunDemo;
+        func(opts.Name, rsrcPath);*/
+        var switcher = new SysCollGen.Dictionary<Func<string, bool>, Action<string, string>> {
+        	{s => (String.Equals("gtk", s)), (u, r) => RunDemoGtk(u, r) },
+        	//{s => (String.Equals("term", s)), (u, r) => RunDemo(u, r) },
+        	{s => true, (u, r) => RunDemo(u, r) }
+        };
+        var func = switcher.First(sw => sw.Key(opts.Ifc.ToLower()));
+        func.Value(opts.Name, rsrcPath);
+        //RunDemo(opts.Name, rsrcPath);
         
         //Trace.Fail("Trace example");
         Trace.Flush(); //Debug.Flush();

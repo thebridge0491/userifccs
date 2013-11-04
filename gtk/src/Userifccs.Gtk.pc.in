@@ -1,0 +1,12 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+assemblies_dir=${libdir}/mono/Userifccs.Gtk
+Libraries=${assemblies_dir}/Userifccs.Gtk.dll
+
+
+Name: Userifccs.Gtk
+Description: Gtk sub-package for CSharp User interface examples project.
+URL: https://bitbucket.org/thebridge0491/userifccs
+Version: 0.1.0
+Libs: -r:${Libraries}
