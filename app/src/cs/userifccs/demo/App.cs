@@ -11,9 +11,11 @@ using NewtJson = Newtonsoft.Json;
 
 using GtkX = global::Gtk;
 
+using Wrappercs.Curses;
 using Util = Introcs.Util.Library;
 using Demo = Userifccs.Demo.Library;
 using UiGtk = Userifccs.Gtk;
+using UiCurses = Userifccs.Curses;
 
 struct OptsRecord {
     public string Name { get; set; }
@@ -84,6 +86,34 @@ public static class App {
 				((GtkX.TextView)uicontroller.View.widgets["textview1"]).Buffer.Text =
 			pretext;
         GtkX.Application.Run();
+    }
+
+    static void RunDemoCurses(string name, string rsrcPath = "resources")
+    {
+        DateTime time1 = DateTime.Now;
+        string greetStr, dateStr, greetPath = "greet.txt";
+        TimeZone tz1 = TimeZone.CurrentTimeZone;
+        string tzStr = tz1.IsDaylightSavingTime(time1) ? tz1.DaylightName
+        	: tz1.StandardName;
+
+        SysTextRegex.Regex re = new SysTextRegex.Regex(@"(?i)^quit$");
+        SysTextRegex.Match m = re.Match(name);
+
+		dateStr = time1.ToString("ddd MMM dd HH:mm:ss yyyy zzz");
+
+        string pretext = string.Format("{0} match: {1} to {2}\n(C# {3}.{4}) Curses {5} TUI\n{6} {7}\n",
+        	m.Success ? "Good" : "Does not", name, re,
+        	Environment.Version.Major, Environment.Version.Minor,
+        	"???", dateStr, tzStr);
+
+        var uicontroller = new UiCurses.HelloController("greet.txt", assembly,
+			rsrcPath);
+		CursesC.wattron(uicontroller.View.stdscr,
+		    (Int32)UiCurses.HelloView.Keys.A_REVERSE);
+        CursesC.mvwaddstr(uicontroller.View.stdscr, 1, 1, pretext);
+        CursesC.wattroff(uicontroller.View.stdscr,
+            (Int32)UiCurses.HelloView.Keys.A_REVERSE);
+        uicontroller.run();
     }
     
     static void ParseCmdopts(string[] args, Mono.Options.OptionSet options)
@@ -212,6 +242,7 @@ public static class App {
         func(opts.Name, rsrcPath);*/
         var switcher = new SysCollGen.Dictionary<Func<string, bool>, Action<string, string>> {
         	{s => (String.Equals("gtk", s)), (u, r) => RunDemoGtk(u, r) },
+        	{s => (String.Equals("curses", s)), (u, r) => RunDemoCurses(u, r) },
         	//{s => (String.Equals("term", s)), (u, r) => RunDemo(u, r) },
         	{s => true, (u, r) => RunDemo(u, r) }
         };

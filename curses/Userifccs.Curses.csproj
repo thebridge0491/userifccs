@@ -4,9 +4,9 @@
     <!-- To generate new guid, from C#: csharp -e 'System.Guid.NewGuid()' -->
     <!--   or from Python: python -c 'import uuid ; print(uuid.uuid4())' -->
     <ProjectGuid>{4b0e64ba-4a7b-4bbf-913f-a07b9a7f7ef2}</ProjectGuid>
-    <!--<RootNamespace>Userifccs.Demo</RootNamespace>-->
+    <!--<RootNamespace>Userifccs.Curses</RootNamespace>-->
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
-    <OutputType Condition=" '$(OutputType)' == '' ">exe</OutputType>
+    <OutputType Condition=" '$(OutputType)' == '' ">library</OutputType>
     <AssemblyOriginatorKeyFile>snkeyfile.snk.pub</AssemblyOriginatorKeyFile>
     <SignAssembly Condition=" '$(AssemblyOriginatorKeyFile)' != '' ">true</SignAssembly>
     <DelaySign Condition=" '$(AssemblyOriginatorKeyFile)' != '' ">true</DelaySign>
@@ -16,7 +16,6 @@
     <RunConfiguration Condition=" '$(RunConfiguration)' == '' ">Default</RunConfiguration>
     <TestLibrary Condition=" '$(TestLibrary)' == '' ">nunit</TestLibrary>
     <AdditionalLibPaths>$(HOME)\nuget\packages</AdditionalLibPaths>
-    <StartupObject Condition=" '$(OutputType)' == 'exe' And '$(StartupObject)' == '' ">$(AssemblyName).App</StartupObject>
   </PropertyGroup>
   <Choose>
     <When Condition=" '$(Configuration)' == 'Release' ">
@@ -61,53 +60,17 @@
       <HintPath>\usr\lib\mono\fsharp\FSharp.Core.dll</HintPath>
       <HintPath>\usr\local\lib\mono\fsharp\FSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Options">
-	    <HintPath>$(HOME)\.local\lib\mono\Mono.Options\Mono.Options.dll</HintPath>
-	    <HintPath>$(HOME)\nuget\packages\Mono.Options\lib\net40\Mono.Options.dll</HintPath>
-    </Reference>
-    <Reference Include="log4net">
+    <!--<Reference Include="log4net">
 	  <HintPath>$(HOME)\nuget\packages\log4net\lib\net40-full\log4net.dll</HintPath>
-	</Reference>
-    <!--<Reference Include="gkeyfile-sharp"/>-->
-    <Reference Include="ini-parser">
-	  <HintPath>$(HOME)\nuget\packages\ini-parser\lib\INIFileParser.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-	  <HintPath>$(HOME)\nuget\packages\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="YamlDotNet">
-	  <HintPath>$(HOME)\nuget\packages\YamlDotNet\lib\net35\YamlDotNet.dll</HintPath>
-    </Reference>
-    <Reference Include="gtk-sharp-3">
-	    <HintPath>\usr\lib\mono\gtk-sharp-3.0\gtk-sharp.dll</HintPath>
-	    <HintPath>\usr\local\lib\mono\gtk-sharp-3.0\gtk-sharp.dll</HintPath>
-    </Reference>
-    <Reference Include="glib-sharp-3">
-	    <HintPath>\usr\lib\mono\gtk-sharp-3.0\glib-sharp.dll</HintPath>
-	    <HintPath>\usr\local\lib\mono\gtk-sharp-3.0\glib-sharp.dll</HintPath>
-    </Reference>
-    <Reference Include="gio-sharp-3">
-	    <HintPath>\usr\lib\mono\gtk-sharp-3.0\gio-sharp.dll</HintPath>
-	    <HintPath>\usr\local\lib\mono\gtk-sharp-3.0\gio-sharp.dll</HintPath>
-    </Reference>
-    <!--<Reference Include="atk-sharp-3">
-	    <HintPath>\usr\lib\mono\gtk-sharp-3.0\atk-sharp.dll</HintPath>
-	    <HintPath>\usr\local\lib\mono\gtk-sharp-3.0\atk-sharp.dll</HintPath>
-    </Reference>-->
+	</Reference>-->
     <Reference Include="Introcs.Util">
 	    <HintPath>$(HOME)\nuget\packages\Introcs.Util\lib\net45\Introcs.Util.dll</HintPath>
     </Reference>
     <Reference Include="Userifccs.Aux">
 	    <HintPath>$(HOME)\nuget\packages\Userifccs.Aux\lib\net45\Userifccs.Aux.dll</HintPath>
     </Reference>
-    <Reference Include="Userifccs.Gtk">
-	    <HintPath>$(HOME)\nuget\packages\Userifccs.Gtk\lib\net45\Userifccs.Gtk.dll</HintPath>
-    </Reference>
     <Reference Include="Wrappercs.Curses">
 	    <HintPath>$(HOME)\nuget\packages\Wrappercs.Curses\lib\net45\Wrappercs.Curses.dll</HintPath>
-    </Reference>
-    <Reference Include="Userifccs.Curses">
-	    <HintPath>$(HOME)\nuget\packages\Userifccs.Curses\lib\net45\Userifccs.Curses.dll</HintPath>
     </Reference>
     <!--<ProjectReference Include="..\common\Introcs.Util.*proj">
       <Project>{7d0fd0f6-1553-4df1-a6fc-1052aba961c7}</Project>
@@ -120,24 +83,25 @@
       <Pack>true</Pack>
       <PackagePath>LICENSE</PackagePath>
     </Content>
-    <Content Include="resources\gtk\*.*;resources\curses\*.*;resources\*.*">
+    <Content Include="resources\curses\*.*;resources\*.*" Exclude="resources\App.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
-    <EmbeddedResource Include="resources\*.*">
+    <EmbeddedResource Include="resources\*.*" Exclude="resources\App.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <LogicalName>$(AssemblyName).resources.%(filename)%(extension)</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="resources\gtk\*.*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <LogicalName>$(AssemblyName).resources.gtk.%(filename)%(extension)</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="resources\curses\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <LogicalName>$(AssemblyName).resources.curses.%(filename)%(extension)</LogicalName>
     </EmbeddedResource>
+    <!--<None Include="resources\*.*" Exclude="resources\App.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>-->
     <TestReference Include="$(TargetPath)"/>
     <TestReference Include="Introcs.Util.dll"/>
+    <TestReference Include="Userifccs.Aux.dll"/>
+    <TestReference Include="Wrappercs.Curses.dll"/>
   </ItemGroup>
   <ItemGroup Condition=" !Exists('src\cs\$(AssemblyName).CSharp.csproj') ">
     <Compile Condition=" '$(OutputType)' == 'library' Or '$(OutputType)' == 'exe' "

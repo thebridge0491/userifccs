@@ -1,0 +1,12 @@
+prefix=${pcfiledir}/../..
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+assemblies_dir=${libdir}/mono/Userifccs.Curses
+Libraries=${assemblies_dir}/Userifccs.Curses.dll
+
+
+Name: Userifccs.Curses
+Description: Curses sub-package for CSharp User interface example project.
+URL: https://bitbucket.org/thebridge0491/userifccs
+Version: 0.1.0
+Libs: -r:${Libraries}

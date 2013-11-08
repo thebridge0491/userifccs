@@ -7,7 +7,7 @@
     <!--<RootNamespace>Userifccs</RootNamespace>-->
     <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <!--<OutputType Condition=" '$(OutputType)' == '' ">library</OutputType>-->
-    <SUBPROJS Condition=" '$(SUBPROJS)' == '' ">aux\*.*proj;gtk\*.*proj;app\*.*proj</SUBPROJS>
+    <SUBPROJS Condition=" '$(SUBPROJS)' == '' ">aux\*.*proj;gtk\*.*proj;curses\*.*proj;app\*.*proj</SUBPROJS>
     <ProjectVersion Condition=" '$(ProjectVersion)' =='' ">0.1.0</ProjectVersion>
     <DistTargets Condition=" '$(DistTargets)' == '' ">DistTar;DistZip</DistTargets>
     <TAREXT Condition=" '$(TAREXT)' == '' ">tar.gz</TAREXT>
