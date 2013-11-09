@@ -12,6 +12,7 @@ using NewtJson = Newtonsoft.Json;
 using GtkX = global::Gtk;
 
 using Wrappercs.Curses;
+using Wrappercs.Tcltk;
 using Util = Introcs.Util.Library;
 using Demo = Userifccs.Demo.Library;
 using UiGtk = Userifccs.Gtk;
@@ -20,6 +21,7 @@ using UiCurses = Userifccs.Curses;
 struct OptsRecord {
     public string Name { get; set; }
     public string Ifc { get; set; }
+    public string[] Extrav { get; set; }
 
     public override string ToString()
     {
@@ -115,8 +117,65 @@ public static class App {
             (Int32)UiCurses.HelloView.Keys.A_REVERSE);
         uicontroller.run();
     }
+
+    static int tk_AppInit(SWIGTYPE_p_Tcl_Interp interp) {
+        if (TcltkC.Tcl_Init(interp) != 0) {
+            Console.Error.WriteLine("Error: Initializing Tcl!\n");
+            return 1;
+        }
+        if (TcltkC.Tk_Init(interp) != 0) {
+            Console.Error.WriteLine("Error: Initializing Tk!\n");
+            return 1;
+        }
+        return 0;
+    }
+
+    static void RunDemoTcltk(string name, string rsrcPath = "resources",
+            string[] extrav = null)
+    {
+        DateTime time1 = DateTime.Now;
+        string greetStr, dateStr, greetPath = "greet.txt";
+        TimeZone tz1 = TimeZone.CurrentTimeZone;
+        string tzStr = tz1.IsDaylightSavingTime(time1) ? tz1.DaylightName
+        	: tz1.StandardName;
+
+        SysTextRegex.Regex re = new SysTextRegex.Regex(@"(?i)^quit$");
+        SysTextRegex.Match m = re.Match(name);
+
+		dateStr = time1.ToString("ddd MMM dd HH:mm:ss yyyy zzz");
+
+        string pretext = string.Format("{0} match: {1} to {2}\n(C# {3}.{4}) Curses {5} TUI\n{6} {7}\n",
+        	m.Success ? "Good" : "Does not", name, re,
+        	Environment.Version.Major, Environment.Version.Minor,
+        	"???", dateStr, tzStr);
+        
+        string uiform = (null == extrav || 1 > extrav.Length) ?
+            rsrcPath + "/" + "tcltk/helloForm-tk.tcl" : 
+            rsrcPath + "/" + extrav[0];
+        string[] defaultArgs = {"--", uiform};
+        string[] tkArgs = new string[(null == extrav || 1 > extrav.Length) ? 3 : extrav.Length+1];
+        Array.Copy(defaultArgs, 0, tkArgs, 0, 2);
+        
+        if (null == extrav || 1 > extrav.Length)
+            tkArgs[2] = "-name=helloForm-tk";
+        else
+            Array.Copy(extrav, 1, tkArgs, 2, extrav.Length-1);
+        
+        SWIGTYPE_p_Tcl_Interp interp = TcltkC.Tcl_CreateInterp();
+        tk_AppInit(interp);
+        //string[] buf_setArgv = new string[tkArgs.Length-2];
+        //Array.Copy(tkArgs, 2, buf_setArgv, 0, tkArgs.Length-2);
+        string[] buf_setArgv = tkArgs.Skip(2).Take(tkArgs.Length-2).ToArray();
+        TcltkC.Tcl_Eval(interp, String.Format("set argv {{ {0} }}",
+            String.Join(" ", buf_setArgv)));
+        //TcltkC.Tcl_EvalFile(interp, tkArgs[1]);
+        TcltkC.Tcl_Eval(interp, String.Format("source {0}", tkArgs[1]));
+        TcltkC.Tcl_Eval(interp, "if {![winfo exists .frame1]} {lib_main}");
+        TcltkC.Tk_MainLoop();
+        //TcltkC.Tk_Main(tkArgs.Length, tkArgs, tk_AppInit); // ???
+    }
     
-    static void ParseCmdopts(string[] args, Mono.Options.OptionSet options)
+    static string[] ParseCmdopts(string[] args, Mono.Options.OptionSet options)
     {
         SysCollGen.List<string> extra = new SysCollGen.List<string>();
         log.Info("parseCmdopts()");
@@ -129,10 +188,11 @@ public static class App {
         if (0 < extra.Count)
             Console.Error.WriteLine("Extra args: {0}", extra.Count);
         if (showHelp) {
-		    Console.WriteLine("Usage: {0} [options]\n\nOptions:", progName);
+		    Console.WriteLine("Usage: {0} [options][extrafile [extraopts ..]]\n\nOptions:", progName);
 	    	options.WriteOptionDescriptions(Console.Out);
 		    Environment.Exit(1);
 	    }
+	    return extra.ToArray();
     }
     
     struct YamlConfig
@@ -151,7 +211,8 @@ public static class App {
     /// <returns>The exit code.</returns>
     static int Main(string[] args)
     {
-        OptsRecord opts = new OptsRecord() {Name = "World", Ifc = "Term"};
+        OptsRecord opts = new OptsRecord() {Name = "World", Ifc = "Term",
+            Extrav = null};
         var options = new Mono.Options.OptionSet() {
             {"u|user=", "user name", (string v) => opts.Name = v},
             {"i|ifc=", "interface", (string v) => opts.Ifc = v},
@@ -165,7 +226,7 @@ public static class App {
         foreach (var lstnr in lstnrs)
         	Debug.Listeners.Add(lstnr);	// /define:[TRACE|DEBUG]
         
-        ParseCmdopts(args, options);
+        opts.Extrav = ParseCmdopts(args, options);
         
         string envRsrcPath = Environment.GetEnvironmentVariable("RSRC_PATH");
         string rsrcPath = null != envRsrcPath ? envRsrcPath : "resources";
@@ -243,6 +304,7 @@ public static class App {
         var switcher = new SysCollGen.Dictionary<Func<string, bool>, Action<string, string>> {
         	{s => (String.Equals("gtk", s)), (u, r) => RunDemoGtk(u, r) },
         	{s => (String.Equals("curses", s)), (u, r) => RunDemoCurses(u, r) },
+        	{s => (String.Equals("tcltk", s)), (u, r) => RunDemoTcltk(u, r, opts.Extrav) },
         	//{s => (String.Equals("term", s)), (u, r) => RunDemo(u, r) },
         	{s => true, (u, r) => RunDemo(u, r) }
         };

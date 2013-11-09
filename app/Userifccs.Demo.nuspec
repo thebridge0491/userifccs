@@ -34,6 +34,7 @@
       <dependency id="userifccs.gtk" version="0.1.0"/>
       <dependency id="wrappercs.curses" version="2013.11.0"/>
       <dependency id="userifccs.curses" version="0.1.0"/>
+      <dependency id="wrappercs.tcltk" version="2013.11.0"/>
     </dependencies>
   </metadata>
   <!--<files>
